@@ -18,6 +18,7 @@ public class Orders {
     private Long id ;
     private Double price ;
     private Long quantity;
+
     private String state;
 
     private Date dateDeCommande;
