@@ -1,23 +1,16 @@
 package com.example.productmanagement.authentication;
-
-import jakarta.persistence.Column;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
-
+@NoArgsConstructor
 public class RegistrationRequest {
 
-    private String fName;
-
-    private String lName;
+    private String firstName;
+    private String lastName;
     private String username;
     private String password;
+
 
 }
 

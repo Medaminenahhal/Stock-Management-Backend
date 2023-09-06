@@ -1,13 +1,10 @@
 package com.example.productmanagement.entities;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 @Entity
 @Table(name = "category")
@@ -24,15 +21,17 @@ public class Category {
     private String name;
 
     private boolean isDeleted = false;
-    @JsonFormat(pattern = "YYYY-MM-DD HH:mm")
+
     private Date datecreation = new Date();
 
-    @JsonFormat(pattern = "YYYY-MM-DD HH:mm")
+
     private Date datemodification;
 
-    public Category(Long id, String name) {
+    public Category(Long id, String name, Date datecreation, Date datemodification) {
         this.id = id;
         this.name = name;
+        this.datecreation = datecreation;
+        this.datemodification = datemodification;
     }
     public Category(Long id) {
         this.id = id;

@@ -1,6 +1,5 @@
 package com.example.productmanagement.services;
 
-import com.example.productmanagement.dto.CategoryDto;
 import com.example.productmanagement.dto.ProduitDto;
 import com.example.productmanagement.entities.Category;
 import com.example.productmanagement.entities.Produit;
@@ -8,6 +7,9 @@ import com.example.productmanagement.exception.RessourceNotFoundException;
 import com.example.productmanagement.repositories.CategoryRepository;
 import com.example.productmanagement.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -26,21 +28,17 @@ public class ProductService {
         this.categoryService=categoryService;
     }
 
-    public List<ProduitDto> getallproducts (){
-        try{
-        List<Produit> produits = new ArrayList<>();
-        produits=productRepository.findAllByisDeleted(false);
-        List<ProduitDto> produitDtoList=new ArrayList<>();
-        for (Produit produit : produits) {
-            ProduitDto produitDto=getProduitDto(produit);
-            CategoryDto categoryDto = categoryService.getCategoryDto(produit.getCategory()) ;
-            produitDto.setCategory_id(categoryService.toEntity(categoryDto).getId());
-            produitDtoList.add(produitDto);
-        }
-
-
-            return produitDtoList;}
-        catch (Exception ex){
+    public Page<Produit> getallproducts (String search ,Pageable pageable){
+        try {
+            Page<Produit> productsPage = null;
+            List<Produit> produits = new ArrayList<>();
+            if (search != null && !search.isEmpty()) {
+                productsPage = productRepository.findByNameContainingIgnoreCase(search, pageable);
+            } else {
+                productsPage = productRepository.findAllByisDeleted(false, pageable);
+            }
+            return productsPage;
+        }catch (Exception ex){
             ex.printStackTrace();
             throw new RuntimeException("Failed to fetch products from the database.");
         }
@@ -61,18 +59,14 @@ public class ProductService {
     public Produit insertproduct (ProduitDto produitDto){
              try {
             // Check if a product with the same name already exists in the database.
-
-            boolean productExists =productRepository.existsByname(produitDto.getName());
+                 boolean productExists =productRepository.existsByname(produitDto.getName());
             if (productExists) {
                 // Handle the case when the product with the same name already exists.
                 // You can throw an exception or return null or any other action you want.
                 // For example:
                 throw new IllegalArgumentException("Product with the same name already exists.");
             }
-            // Fetch the associated Categorie from the database using its ID.
-
-            // Set the fetched Categorie in the Produit.
-            Produit produit = toEntity(produitDto);
+            Produit produit=toEntity(produitDto);
 
             // Save the product to the database.
             return productRepository.save(produit);}
@@ -106,10 +100,10 @@ public class ProductService {
             throw new RessourceNotFoundException("Product with ID " + id + " not found.");
 
             // Update the existing produit with the new values
-            Produit produit = toEntity(updatedProduitDto);
+         Produit produit = toEntity(updatedProduitDto);
 
-        produit.setDatemodification(new Date());
-        // Save the updated produit to the database
+         produit.setDatemodification(new Date());
+        // Save the updated product to the database
         return productRepository.save(produit);}
         catch (Exception ex){
             throw new RuntimeException("error updating");
@@ -155,19 +149,26 @@ public class ProductService {
 
     }
 
-    private Produit toEntity(ProduitDto produitDto) {
+    public Produit toEntity(ProduitDto produitDto) {
         return new Produit(
                 produitDto.getId(),
                 produitDto.getName(),
                 produitDto.getPrice(),
-                new Category(produitDto.getCategory_id()));
+                produitDto.getQuantity(),
+                produitDto.getDateCreation(),
+                produitDto.getDateModification(),
+                new Category(produitDto.getCategory_id())
+        );
     }
     private ProduitDto getProduitDto(Produit produit){
         ProduitDto produitDto = new ProduitDto();
         produitDto.setId(produit.getId());
         produitDto.setName(produit.getName());
         produitDto.setPrice(produit.getPrice());
+        produitDto.setQuantity(produit.getQuantity());
         produitDto.setCategory_id(produit.getCategory().getId());
+        produitDto.setDateCreation(produit.getDatecreation());
+        produitDto.setDateModification(produit.getDatemodification());
 
         return produitDto ;
     }

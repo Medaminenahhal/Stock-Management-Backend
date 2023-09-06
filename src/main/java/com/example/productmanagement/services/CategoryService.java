@@ -5,6 +5,8 @@ import com.example.productmanagement.entities.Category;
 import com.example.productmanagement.exception.RessourceNotFoundException;
 import com.example.productmanagement.repositories.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,6 +22,24 @@ public class CategoryService {
         this.categoryRepository = categoryRepository;
     }
 
+    public Page<Category> getallcategories (Pageable pageable){
+        try {
+            List<Category> categories = new ArrayList<>();
+            categories=categoryRepository.findAll();
+            List<CategoryDto> categoryDtoList=new ArrayList<>();
+            for (Category category : categories) {
+                CategoryDto categoryDto=getCategoryDto(category);
+                categoryDtoList.add(categoryDto);
+            }
+
+
+            return  categoryRepository.findAll(pageable);}
+        catch (Exception ex){
+         ex.printStackTrace();
+         throw new RessourceNotFoundException("Failed to fetch categories from the database.");
+        }
+
+    }
     public List<CategoryDto> getallcategories (){
         try {
             List<Category> categories = new ArrayList<>();
@@ -33,8 +53,8 @@ public class CategoryService {
 
             return categoryDtoList;}
         catch (Exception ex){
-         ex.printStackTrace();
-         throw new RessourceNotFoundException("Failed to fetch categories from the database.");
+            ex.printStackTrace();
+            throw new RessourceNotFoundException("Failed to fetch categories from the database.");
         }
 
     }
@@ -143,7 +163,9 @@ public class CategoryService {
     protected Category toEntity(CategoryDto categoryDto) {
         return new Category(
                 categoryDto.getId(),
-                categoryDto.getName()
+                categoryDto.getName(),
+                categoryDto.getDatecreation(),
+                categoryDto.getDatemodification()
         );
 
     }
@@ -151,6 +173,8 @@ public class CategoryService {
         CategoryDto categoryDto = new CategoryDto();
         categoryDto.setId(category.getId());
         categoryDto.setName(category.getName());
+        categoryDto.setDatecreation((category.getDatecreation()));
+        categoryDto.setDatemodification((category.getDatemodification()));
         return categoryDto ;
     }
 

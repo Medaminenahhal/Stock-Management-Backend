@@ -9,10 +9,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
+
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -23,36 +25,58 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthResponse register( RegistrationRequest registrationRequest) {
+
+    public AuthResponse register(RegistrationRequest registrationRequest) {
+        try {
+            boolean exist = userRepository.existsByUsername(registrationRequest.getUsername());
+            if (exist){
+                throw new IllegalArgumentException("User with the same username already exists.");
+            }
         log.info("Incoming Registration Request: {}", registrationRequest);
         User user = User.builder()
-                .fName(registrationRequest.getFName())
-                .lName(registrationRequest.getLName())
+                .lastName(registrationRequest.getLastName())
+                .firstName(registrationRequest.getFirstName())
                 .username(registrationRequest.getUsername())
                 .password(passwordEncoder.encode(registrationRequest.getPassword()))
                 .role("USER")
                 .build();
-        log.info("first name:"+registrationRequest.getFName());
-        log.info("Creating user: {}", user);
         userRepository.save(user);
-        String jwtToken = jwtService.generateToken( user);
+        log.info("Creating user: {}", user);
+
+         String jwtToken = jwtService.generateToken(user, user.getRole(),user.getId());
         return AuthResponse.builder()
                 .token(jwtToken)
                 .build();
     }
+    catch(Exception ex){
+        ex.printStackTrace(); // Just an example, you should use a proper logging mechanism.
+        throw new RuntimeException("Error inserting User " + ex.getMessage());
+    }}
 
     public AuthResponse authenticate(AuthRequest authRequest) {
-        authenticationManager.authenticate(
+        Authentication authenticate = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         authRequest.getUsername(),
                         authRequest.getPassword()
                 )
         );
+
+        UserDetails userDetails = (UserDetails) authenticate.getPrincipal();
         User user = userRepository.findByUsername(authRequest.getUsername());
-        String jwtToken = jwtService.generateToken(user);
+
+        String jwtToken = jwtService.generateToken(userDetails, user.getRole(),user.getId());
+
         return AuthResponse.builder()
                 .token(jwtToken)
                 .build();
     }
+
+
+
+
+
+
+
+
 
 }

@@ -1,5 +1,6 @@
 package com.example.productmanagement.services;
 
+import com.example.productmanagement.entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -27,22 +28,22 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-    public String generateToken(UserDetails userDetails){
-        return generateToken(new HashMap<>(), userDetails);
-    }
 
-    public String generateToken(
-            Map<String, Object> extractClaims,
-            UserDetails userDetails
-    ) {
+
+    public String generateToken(UserDetails userDetails, String userRole, Long user_id) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", userRole);
+        claims.put("id", user_id);// Include the user's role in the claims
+
         return Jwts.builder()
-                .setClaims(extractClaims)
+                .setClaims(claims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
+                .setExpiration(new Date(System.currentTimeMillis() + 10000 * 60 * 24))
                 .signWith(SignatureAlgorithm.HS256, getSignInKey())
                 .compact();
     }
+
 
     public boolean isTokenValid(String token, UserDetails userDetails){
         final String username = extractUserName(token);

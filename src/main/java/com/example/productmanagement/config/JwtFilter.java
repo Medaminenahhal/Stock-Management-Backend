@@ -1,5 +1,6 @@
 package com.example.productmanagement.config;
 
+import com.example.productmanagement.entities.User;
 import com.example.productmanagement.services.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

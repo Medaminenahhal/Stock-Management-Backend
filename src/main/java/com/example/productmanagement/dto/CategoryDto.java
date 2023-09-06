@@ -9,9 +9,9 @@ import java.util.Date;
 public class CategoryDto {
     private Long id ;
     private String name;
-    @JsonFormat(pattern = "YYYY-MM-DD HH:mm")
+
     private Date datecreation = new Date();
 
-    @JsonFormat(pattern = "YYYY-MM-DD HH:mm")
+
     private Date datemodification;
 }
